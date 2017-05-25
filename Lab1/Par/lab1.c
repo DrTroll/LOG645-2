@@ -32,10 +32,12 @@ int world_rank, world_size, i, j, k, chunkSize, operVal;
 err = MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 err = MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 int elements_per_proc = (64 / world_size);
-cVal receive[elements_per_proc];
+
 int matrix[8][8]; //The 8x8 matric at init
-cVal send[64];
-cVal final[64];
+cVal *receive = (cVal *)malloc(world_size*sizeof(cVal));
+//cVal receive[elements_per_proc] = (cVal *)malloc(sizeof(cVal) * world_size);
+cVal *send = (cVal *)malloc(sizeof(cVal) * world_size);
+cVal *final = (cVal *)malloc(sizeof(cVal) * world_size);
 if(world_rank == ROOT){
 
 
