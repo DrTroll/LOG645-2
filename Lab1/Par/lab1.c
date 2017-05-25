@@ -17,14 +17,21 @@ struct timeval tp;
 gettimeofday (&tp, NULL); // Debut du chronometre
 timeStart = (double) (tp.tv_sec) + (double) (tp.tv_usec) / 1e6;
 
+err = MPI_Init(&argc, &argv);
+int world_rank, world_size, i, j, k, chunkSize, operVal;
+err = MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+err = MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-int matrix[8][8]; //The 8x8 matric
+int matrix[8][8]; //The 8x8 matric at init
 for(int i=0 ; i<8 ; i++){ 
 	for(int j=0 ; j<8 ; j++) 
 	{ 
 		matrix[i][j] = initNumber;
 	} 
 }
+
+
+MPI_Scatter(rand_nums, elements_per_proc, MPI_FLOAT, sub_rand_nums, elements_per_proc, MPI_FLOAT, 0, MPI_COMM_WORLD);
 
 if (problemChoice == 1){
 	for(int k=0 ; k<=iteration ; k++){
