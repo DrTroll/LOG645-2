@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <mpi.h>
 
+
 typedef struct caseVal {
         int value;
         int col;
@@ -34,10 +35,14 @@ err = MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 int elements_per_proc = (64 / world_size);
 
 int matrix[8][8]; //The 8x8 matric at init
+/*cVal receive[elements_per_proc];
+cVal send[64];
+cVal final[64];
+*/
 cVal *receive = (cVal *)malloc(world_size*sizeof(cVal));
-//cVal receive[elements_per_proc] = (cVal *)malloc(sizeof(cVal) * world_size);
 cVal *send = (cVal *)malloc(sizeof(cVal) * world_size);
 cVal *final = (cVal *)malloc(sizeof(cVal) * world_size);
+
 if(world_rank == ROOT){
 
 
@@ -96,33 +101,33 @@ if (problemChoice == 3){
 		}
 }
 if(world_rank == ROOT){
-if (problemChoice == 1){
-	for(int k=0 ; k<=iteration ; k++){
-		for(int i=0 ; i<8 ; i++){ 
-			for(int j=0 ; j<8 ; j++) 
-			{ 	
-				usleep(1000);
-				matrix[i][j] = matrix[i][j]+(i+j)*k;
-			} 
-		}	
+	if (problemChoice == 1){
+		for(int k=0 ; k<=iteration ; k++){
+			for(int i=0 ; i<8 ; i++){ 
+				for(int j=0 ; j<8 ; j++) 
+				{ 	
+					usleep(1000);
+					matrix[i][j] = matrix[i][j]+(i+j)*k;
+				} 
+			}	
+		}
 	}
-}
-else if (problemChoice == 2){
-	for(int k=0 ; k<=iteration ; k++){
-		for(int i=0 ; i<8 ; i++){ 
-			for(int j=0 ; j<8 ; j++) 
-			{ 
-				usleep(1000);
-				if(j != 0){
-					matrix[i][j] = matrix[i][j]+(matrix[i][j-1] * k);
-				} else {
-					matrix[i][j] = matrix[i][j]+(i*k);
-				}
-				
-			} 
-		}	
-	}
-}	
+	else if (problemChoice == 2){
+		for(int k=0 ; k<=iteration ; k++){
+			for(int i=0 ; i<8 ; i++){ 
+				for(int j=0 ; j<8 ; j++) 
+				{ 
+					usleep(1000);
+					if(j != 0){
+						matrix[i][j] = matrix[i][j]+(matrix[i][j-1] * k);
+					} else {
+						matrix[i][j] = matrix[i][j]+(i*k);
+					}
+					
+				} 
+			}	
+		}
+	}	
 }
 MPI_Gather(&receive, elements_per_proc, mpi_cVal, &final, elements_per_proc, mpi_cVal, 0, MPI_COMM_WORLD);
 if(world_rank == ROOT){
@@ -136,8 +141,6 @@ if(world_rank == ROOT){
 	printf ("\n");
 	} 
 
-
-
 	printf ("End Matrix seq\n");
 for(int i=0 ; i<8 ; i++){ 
 	for(int j=0 ; j<8 ; j++) 
@@ -146,6 +149,7 @@ for(int i=0 ; i<8 ; i++){
 	} 
 printf ("\n");
 }
+
 
 gettimeofday (&tp, NULL); // Fin du chronometre
 timeEnd = (double) (tp.tv_sec) + (double) (tp.tv_usec) / 1e6;
