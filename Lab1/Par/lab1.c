@@ -35,6 +35,7 @@ int elements_per_proc = (64 / world_size);
 cVal receive[elements_per_proc];
 int matrix[8][8]; //The 8x8 matric at init
 cVal send[64];
+cVal final[64];
 if(world_rank == ROOT){
 
 
@@ -42,15 +43,29 @@ for(int i=0 ; i<8 ; i++){
 	for(int j=0 ; j<8 ; j++) 
 	{ 
 		matrix[i][j] = initNumber;
-		send[i*8+j].value = initNumber;
+		send[i*8+j].value = i*8+j;
 		send[i*8+j].col = j;
 		send[i*8+j].line = i;
 	} 
 }
 
+
+
 }
 
 
+
+if(world_rank == ROOT){
+	printf ("sent Matrix \n");
+	for(int i=0 ; i<8 ; i++){ 
+	for(int j=0 ; j<8 ; j++) 
+	{ 
+		printf ("%.2d ", send[i*8+j].value);
+		//printf ("%.2d \n", i*8+j);
+	} 
+	printf ("\n");
+	} 
+}
 
 /* create a type for struct car */
     const int nitems=2;
@@ -70,15 +85,13 @@ for(int i=0 ; i<8 ; i++){
 
 
 MPI_Scatter(&send, elements_per_proc, mpi_cVal, &receive, elements_per_proc, mpi_cVal, 0, MPI_COMM_WORLD);
-
-
-if (problemChoice == 1){
-	for(int k=0 ; k<=iteration ; k++){ 	
+if (problemChoice == 3){
+	for(i=0; i<elements_per_proc;i++){
+			for(k = 1; k <= iteration; k++){
 				usleep(1000);
-				receive[0].value = receive[0].value + (receive[0].line + receive[0].col) * k;
-				//printf ("%.2d ", receive[0].value);
-
-	}
+				receive[i].value = receive[i].value + (receive[i].line + receive[i].col) * k;
+			}
+		}
 }
 if(world_rank == ROOT){
 if (problemChoice == 1){
@@ -109,17 +122,21 @@ else if (problemChoice == 2){
 	}
 }	
 }
-MPI_Gather(&receive, elements_per_proc, mpi_cVal, &send, elements_per_proc, mpi_cVal, 0, MPI_COMM_WORLD);
+MPI_Gather(&receive, elements_per_proc, mpi_cVal, &final, elements_per_proc, mpi_cVal, 0, MPI_COMM_WORLD);
 if(world_rank == ROOT){
 	printf ("receive Matrix \n");
 	for(int i=0 ; i<8 ; i++){ 
 	for(int j=0 ; j<8 ; j++) 
 	{ 
-		printf ("%.2d ", send[i*8+j].value);
+		printf ("%.2d ", final[i*8+j].value);
+		//printf ("%.2d \n", i*8+j);
 	} 
 	printf ("\n");
 	} 
-	printf ("End Matrix \n");
+
+
+
+	printf ("End Matrix seq\n");
 for(int i=0 ; i<8 ; i++){ 
 	for(int j=0 ; j<8 ; j++) 
 	{ 
